@@ -1,0 +1,14 @@
+sylius_twig_hooks:
+#  hooks:
+    sylius_shop.checkout.common.sidebar.summary.total:
+      on_invoice_fee:
+        template: '@CoolmindsPayByInvoice/checkout/sidebar/summary/total/on_invoice_fee.html.twig'
+        priority: 250
+    sylius_invoicing_plugin.shared.download.pdf:
+      on_invoice_fee:
+        template: '@CoolmindsPayByInvoice/bundles/SyliusInvoicingPlugin/shared/download/_on_invoice_fee.html.twig'
+        priority: 150
+    sylius_admin.order.show.content.sections.summary:
+      on_invoice_fee:
+        template: '@CoolmindsPayByInvoice/bundles/SyliusAdminBundle/order/show/content/sections/summary/on_invoice_fee.html.twig'
+        priority: 50

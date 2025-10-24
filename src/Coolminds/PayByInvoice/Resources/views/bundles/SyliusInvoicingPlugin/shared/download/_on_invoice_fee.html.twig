@@ -1,0 +1,17 @@
+{% set order = invoice.order %}
+<p>peiter</p>
+{% if order is defined %}
+    {% set onInvoiceFeeTotal = order.getAdjustmentsTotal('on_invoice_fee') %}
+    {% if onInvoiceFeeTotal > 0 %}
+        <tr>
+            <td colspan="4"></td>
+            <td class="text-right bg-gray">
+                {{ 'on_invoice.fee_label_with_percent'|trans({'%fee%': '5'}, 'messages', invoice.localeCode) }}:
+            </td>
+            <td class="text-right bg-gray">
+                {{ (onInvoiceFeeTotal / 100)|number_format(2, ',', '.') }}
+            </td>
+            <td class="text-right bg-gray">{{ order.currencyCode }}</td>
+        </tr>
+    {% endif %}
+{% endif %}

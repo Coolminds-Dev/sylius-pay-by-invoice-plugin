@@ -1,0 +1,26 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Coolminds\PayByInvoice\:
+    resource: '../../*'
+    exclude: '../../{Entity,Tests,Resources}'
+
+  Coolminds\PayByInvoice\Processors\OnInvoiceFeeProcessor:
+    arguments:
+      $onInvoicePaymentCode: '%coolminds_pay_by_invoice.payment_code%'
+      $feePercentage: '%coolminds_pay_by_invoice.fee_percentage%'
+      $adjustmentFactory: '@sylius.factory.adjustment'
+      $translator: '@translator'
+    tags:
+      - { name: sylius.order_processor, priority: 10 }
+
+  Coolminds\PayByInvoice\Form\Extension\PaymentMethodChoiceTypeExtension:
+    arguments:
+      $onInvoiceFeePercentage: '%coolminds_pay_by_invoice.fee_percentage%'
+      $onInvoiceDisplayInDescription: '%coolminds_pay_by_invoice.display_in_description%'
+      $onInvoiceGroupCode: '%coolminds_pay_by_invoice.group_code%'
+    tags:
+      - { name: form.type_extension }

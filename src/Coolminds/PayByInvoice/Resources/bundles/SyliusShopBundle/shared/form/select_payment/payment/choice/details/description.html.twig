@@ -1,0 +1,18 @@
+{% set method = hookable_metadata.context.method %}
+
+{% if method.description is not null %}
+    {% if method.code == on_invoice_payment_code %}
+        <div class="ps-4">
+            <small class="text-black-50">
+                {{ method.description }}
+                {% if on_invoice_display_in_description == TRUE %}
+                    {{ 'on_invoice.fee_suffix'|trans({
+                        '%fee%': (on_invoice_fee_percentage ?? 0)
+                        |number_format(2, ',', '.')|trim(',0')
+                    })|raw }}
+                {% endif %}
+            </small>
+        </div>
+    {% else %}
+        <div class="ps-4"><small class="text-black-50">{{ method.description }}</small></div>
+    {% endif %}

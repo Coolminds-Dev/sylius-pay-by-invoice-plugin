@@ -1,0 +1,18 @@
+{% import '@SyliusAdmin/shared/helper/money.html.twig' as money %}
+<p>Pieter</p>
+
+{% set order = hookable_metadata.context.resource %}
+{% set onInvoiceFeeTotal = order.getAdjustmentsTotal('on_invoice_fee') %}
+
+{% if onInvoiceFeeTotal > 0 %}
+    {% set firstAdj = order.getAdjustments('on_invoice_fee')|first %}
+    {% set label = firstAdj.label is defined ? firstAdj.label : 'on_invoice.fee_label_with_percent'|trans({'%fee%': '5'}) %}
+
+    <tr>
+        <td><strong>{{ label }}</strong></td>
+
+        <td class="text-end">
+            {{ money.format(onInvoiceFeeTotal, order.currencyCode) }}
+        </td>
+    </tr>
+{% endif %}
