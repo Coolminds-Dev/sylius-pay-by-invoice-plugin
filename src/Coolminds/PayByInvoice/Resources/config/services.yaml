@@ -22,5 +22,6 @@ services:
       $onInvoiceFeePercentage: '%coolminds_pay_by_invoice.fee_percentage%'
       $onInvoiceDisplayInDescription: '%coolminds_pay_by_invoice.display_in_description%'
       $onInvoiceGroupCode: '%coolminds_pay_by_invoice.group_code%'
+      $onInvoicePaymentCode: '%coolminds_pay_by_invoice.payment_code%'
     tags:
       - { name: form.type_extension }

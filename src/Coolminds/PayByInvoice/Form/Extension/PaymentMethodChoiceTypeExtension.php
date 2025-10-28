@@ -21,6 +21,7 @@ final class PaymentMethodChoiceTypeExtension extends AbstractTypeExtension {
         private readonly float $onInvoiceFeePercentage,
         private readonly bool $onInvoiceDisplayInDescription,
         private readonly string $onInvoiceGroupCode,
+        private readonly string $onInvoicePaymentCode,
         private readonly TranslatorInterface $translator
     ) {
     }
@@ -32,7 +33,6 @@ final class PaymentMethodChoiceTypeExtension extends AbstractTypeExtension {
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-
         // Normaliseer 'choice_filter' (in jouw stack 1-arg callable)
         $resolver->setNormalizer('choice_filter', function (Options $options, $existingFilter) {
             $request = $this->requestStack->getCurrentRequest();
@@ -42,13 +42,16 @@ final class PaymentMethodChoiceTypeExtension extends AbstractTypeExtension {
             // Is user in groep 'on_invoice'?
             $user = $this->security->getUser();
             $isOnInvoiceUser = false;
-            if ($user && method_exists($user, 'getGroups')) {
-                foreach ($user->getGroups() as $group) {
-                    if (method_exists($group, 'getCode') && $group->getCode() === $this->onInvoiceGroupCode) {
-                        $isOnInvoiceUser = true;
-                        break;
-                    }
-                }
+            $userGroup = $user?->getCustomer()?->getGroup();
+
+            $userGroupCode = null;
+            if ($userGroup) {
+                $userGroup->__load();
+                $userGroupCode = $userGroup->getCode();
+            }
+
+            if (null !== $userGroupCode && $userGroupCode === $this->onInvoiceGroupCode) {
+                $isOnInvoiceUser = true;
             }
 
             $callExistingFilter = static function ($filter, $choice): bool {
@@ -80,7 +83,7 @@ final class PaymentMethodChoiceTypeExtension extends AbstractTypeExtension {
                 }
 
                 if ($choice instanceof PaymentMethodInterface) {
-                    if ($choice->getCode() === $this->onInvoiceGroupCode && !$isOnInvoiceUser) {
+                    if ($choice->getCode() === $this->onInvoicePaymentCode && !$isOnInvoiceUser) {
                         return false;
                     }
                 }

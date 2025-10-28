@@ -8,6 +8,12 @@
         "test-appication"
     ],
     "license": "MIT",
+    "authors": [
+        {
+            "name": "Coolminds",
+            "email": "info@coolminds.nl"
+        }
+    ],
     "require": {
         "php": "^8.2",
         "sylius/sylius": "^2.0",
