@@ -126,7 +126,13 @@ jobs:
 
             -
                 name: Install JS dependencies
-                run: (cd vendor/sylius/test-application && yarn install)
+                run: |
+                    if [ -f vendor/sylius/test-application/package.json ] && \
+                       [ -d vendor/sylius/test-application/vendor/sylius/sylius/src/Sylius/Bundle/AdminBundle ]; then
+                      (cd vendor/sylius/test-application && yarn install)
+                    else
+                      echo "Skipping JS install (no Sylius AdminBundle path)."
+                    fi
 
             -
                 name: Prepare test application database
@@ -138,7 +144,11 @@ jobs:
                 name: Prepare test application assets
                 run: |
                     vendor/bin/console assets:install -vvv
-                    (cd vendor/sylius/test-application && yarn build)
+                    if [ -d vendor/sylius/test-application/vendor/sylius/sylius/src/Sylius/Bundle/AdminBundle ]; then
+                      (cd vendor/sylius/test-application && yarn build)
+                    else
+                      echo "Skipping JS build (no Sylius AdminBundle path)."
+                    fi
 
             -
                 name: Prepare test application cache
@@ -162,14 +172,17 @@ jobs:
 
             -
                 name: Setup Chrome
+                if: ${{ hashFiles('vendor/sylius/test-application/vendor/sylius/sylius/src/Sylius/Bundle/AdminBundle') != '' }}
                 uses: browser-actions/setup-chrome@v1
 
             -
                 name: Run Chrome Headless
-                run: google-chrome-stable --enable-automation --disable-background-networking --no-default-browser-check --no-first-run --disable-popup-blocking --disable-default-apps --allow-insecure-localhost --disable-translate --disable-extensions --no-sandbox --enable-features=Metal --headless --remote-debugging-port=9222 --window-size=2880,1800 --proxy-server='direct://' --proxy-bypass-list='*' http://127.0.0.1 > /dev/null 2>&1 &
+                if: ${{ hashFiles('vendor/sylius/test-application/vendor/sylius/sylius/src/Sylius/Bundle/AdminBundle') != '' }}
+                run: google-chrome-stable --headless --remote-debugging-port=9222 --no-sandbox about:blank > /dev/null 2>&1 &
 
             -
                 name: Run webserver
+                if: ${{ hashFiles('vendor/sylius/test-application/vendor/sylius/sylius/src/Sylius/Bundle/AdminBundle') != '' }}
                 run: symfony server:start --port=8080 --daemon
 
             -
