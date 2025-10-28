@@ -2,13 +2,12 @@
 
 namespace Coolminds\PayByInvoice\DependencyInjection;
 
-use Monolog\Logger;
 use ReflectionClass;
+use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-use Symfony\Component\Config\FileLocator;
 
 final class CoolmindsPayByInvoiceExtension extends Extension implements PrependExtensionInterface
 {
@@ -33,11 +32,14 @@ final class CoolmindsPayByInvoiceExtension extends Extension implements PrependE
 
         // 2) Twig namespace registreren (belangrijk!)
         $ref       = new ReflectionClass(\Coolminds\PayByInvoice\CoolmindsPayByInvoicePlugin::class);
-        $viewsPath = \dirname($ref->getFileName()).'/Resources/views';
+        $bundleDir    = \dirname($ref->getFileName());
+        $viewsPath = $bundleDir.'/Resources/views';
+        $shopOverride = $viewsPath . '/bundles/SyliusShopBundle';
 
-        // 1) Twig-globals
+        // 1) Set twig-globals
         $container->prependExtensionConfig('twig', [
             'paths' => [
+                $shopOverride => 'SyliusShop',
                 $viewsPath => 'CoolmindsPayByInvoice',
             ],
             'globals' => [
@@ -48,7 +50,7 @@ final class CoolmindsPayByInvoiceExtension extends Extension implements PrependE
             ],
         ]);
 
-        // 2) Sylius Twig Hooks (onder 'hooks', zonder extra root)
+//        // 2) Load Sylius Twig Hooks
         $container->prependExtensionConfig('sylius_twig_hooks', [
             'hooks' => [
                 'sylius_shop.checkout.common.sidebar.summary.total' => [
@@ -68,6 +70,14 @@ final class CoolmindsPayByInvoiceExtension extends Extension implements PrependE
                         'template' => '@CoolmindsPayByInvoice/bundles/SyliusAdminBundle/order/show/content/sections/summary/on_invoice_fee.html.twig',
                         'priority' => 50,
                     ],
+                ],
+            ],
+        ]);
+
+        $container->prependExtensionConfig('framework', [
+            'translator' => [
+                'paths' => [
+                    $bundleDir . '/Resources/translations',
                 ],
             ],
         ]);

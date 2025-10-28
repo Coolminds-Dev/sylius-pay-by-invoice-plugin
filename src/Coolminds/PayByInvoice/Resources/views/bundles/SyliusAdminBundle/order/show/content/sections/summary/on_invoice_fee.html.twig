@@ -1,12 +1,18 @@
+{# Template for showing in admin order detail page#}
 {% import '@SyliusAdmin/shared/helper/money.html.twig' as money %}
-<p>Pieter</p>
 
 {% set order = hookable_metadata.context.resource %}
 {% set onInvoiceFeeTotal = order.getAdjustmentsTotal('on_invoice_fee') %}
 
+    {% set fee_pct =
+        on_invoice_fee_percentage is defined
+        ? on_invoice_fee_percentage
+        : 0
+    %}
+
 {% if onInvoiceFeeTotal > 0 %}
     {% set firstAdj = order.getAdjustments('on_invoice_fee')|first %}
-    {% set label = firstAdj.label is defined ? firstAdj.label : 'on_invoice.fee_label_with_percent'|trans({'%fee%': '5'}) %}
+    {% set label = firstAdj.label is defined ? firstAdj.label : 'on_invoice.fee_label_with_percent'|trans({'%fee%': fee_pct}) %}
 
     <tr>
         <td><strong>{{ label }}</strong></td>

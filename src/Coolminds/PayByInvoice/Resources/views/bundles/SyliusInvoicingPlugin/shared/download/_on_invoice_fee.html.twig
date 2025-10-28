@@ -1,12 +1,20 @@
+{#Template for addint to invoice summary #}
 {% set order = invoice.order %}
-<p>peiter</p>
+
 {% if order is defined %}
     {% set onInvoiceFeeTotal = order.getAdjustmentsTotal('on_invoice_fee') %}
+
+    {% set fee_pct =
+        on_invoice_fee_percentage is defined
+        ? on_invoice_fee_percentage
+        : 0
+    %}
+
     {% if onInvoiceFeeTotal > 0 %}
         <tr>
             <td colspan="4"></td>
             <td class="text-right bg-gray">
-                {{ 'on_invoice.fee_label_with_percent'|trans({'%fee%': '5'}, 'messages', invoice.localeCode) }}:
+                {{ 'on_invoice.fee_label_with_percent'|trans({'%fee%': (fee_pct)}, 'messages', invoice.localeCode) }}:
             </td>
             <td class="text-right bg-gray">
                 {{ (onInvoiceFeeTotal / 100)|number_format(2, ',', '.') }}

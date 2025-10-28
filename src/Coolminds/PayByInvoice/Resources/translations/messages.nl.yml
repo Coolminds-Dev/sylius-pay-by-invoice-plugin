@@ -1,0 +1,4 @@
+on_invoice:
+  fee_suffix: "(Let op +%fee%%)"
+  fee_label: "Betaling op factuur toeslag"
+  fee_label_with_percent: "Betaling op factuur toeslag (%fee%%)"

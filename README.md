@@ -1,129 +1,61 @@
-<p align="center">
-    <a href="https://sylius.com" target="_blank">
-        <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="https://media.sylius.com/sylius-logo-800-dark.png">
-          <source media="(prefers-color-scheme: light)" srcset="https://media.sylius.com/sylius-logo-800.png">
-          <img alt="Sylius Logo." src="https://media.sylius.com/sylius-logo-800.png">
-        </picture>
-    </a>
-</p>
+# Coolminds Sylius Pay-By-Invoice Plugin
 
-<h1 align="center">Plugin Skeleton</h1>
+Adds a configurable “Pay by Invoice” flow to Sylius 2.0 (Symfony 6.4):
 
-<p align="center">Skeleton for starting Sylius plugins.</p>
+- Define a payment method. example "on_invoice"
+- Define a customer group example. "pay_by_invoice"
 
-## Documentation
+A proccessor wil applie a configurable percentage surcharge when your specific payment method (e.g. on_invoice) is selected.
+The form type wil show/hide the payment method based on a your Customer Group during checkout.
 
-For a comprehensive guide on Sylius Plugins development please go to Sylius documentation,
-there you will find the <a href="https://docs.sylius.com/en/latest/plugin-development-guide/index.html">Plugin Development Guide</a>, that is full of examples.
+Displays in scheckout summary. admin order, Twig hooks + one template override to display the surcharge in Checkout, Admin > Order, and Invoice PDF.
 
-For more information about the **Test Application** included in the skeleton, please refer to the [Sylius documentation](https://docs.sylius.com/sylius-plugins/plugins-development-guide/testapplication).
+## Requirements
 
-## Quickstart Installation
+PHP 8.2+
 
-Run `composer create-project sylius/plugin-skeleton ProjectName`.
+Symfony 6.4.x
 
-### Traditional
+Sylius 2.0.x
 
-1. From the plugin skeleton root directory, run the following commands:
 
-    ```bash
-    (cd vendor/sylius/test-application && yarn install)
-    (cd vendor/sylius/test-application && yarn build)
-    vendor/bin/console assets:install
-   
-    vendor/bin/console doctrine:database:create
-    vendor/bin/console doctrine:migrations:migrate -n
-    # Optionally load data fixtures
-    vendor/bin/console sylius:fixtures:load -n
-    ```
+## Installation
+```terminaloutput
+Require the plugin
+composer require "coolminds/sylius-pay-by-invoice-plugin:*@dev"
+```
+## Enable the bundle
+`config/bundles.php`
+```
+return [
+    // ...
+    Coolminds\PayByInvoice\CoolmindsPayByInvoicePlugin::class => ['all' => true],
+];
+```
 
-To be able to set up a plugin's database, remember to configure your database credentials in `tests/Application/.env` and `tests/Application/.env.test`.
+## Configure
+Create `config/packages/coolminds_pay_by_invoice.yaml`
+``` yaml
+coolminds_pay_by_invoice:
+  fee_percentage: 2.5              # float, e.g. 2.5 = 2.5%
+  payment_code: 'on_invoice'       # Sylius PaymentMethod code that triggers the fee
+  group_code: 'betalen_op_factuur' # CustomerGroup code allowed to see/use this method
+  display_in_description: true     # append "(+X%)" to the payment label in the shop
+```
 
-2. Run your local server:
+## Clear & warm cache
+```
+php -d memory_limit=-1 bin/console cache:clear
+php -d memory_limit=-1 bin/console cache:warmup
+```
 
-      ```bash
-      symfony server:ca:install
-      symfony server:start -d
-      ```
+## Translations
+By deafault translations for NL and EN ar available.
 
-3. Open your browser and navigate to `https://localhost:8000`.
-
-### Docker
-
-1. Execute `make init` to initialize the container and install the dependencies.
-
-2. Execute `make database-init` to create the database and run migrations.
-
-3. (Optional) Execute `make load-fixtures` to load the fixtures.
-
-4. Your app is available at `http://localhost`.
-
-## Usage
-
-### Running plugin tests
-
-  - PHPUnit
-
-    ```bash
-    vendor/bin/phpunit
-    ```
-
-  - Behat (non-JS scenarios)
-
-    ```bash
-    vendor/bin/behat --strict --tags="~@javascript&&~@mink:chromedriver"
-    ```
-
-  - Behat (JS scenarios)
- 
-    1. [Install Symfony CLI command](https://symfony.com/download).
- 
-    2. Start Headless Chrome:
-    
-      ```bash
-      google-chrome-stable --enable-automation --disable-background-networking --no-default-browser-check --no-first-run --disable-popup-blocking --disable-default-apps --allow-insecure-localhost --disable-translate --disable-extensions --no-sandbox --enable-features=Metal --headless --remote-debugging-port=9222 --window-size=2880,1800 --proxy-server='direct://' --proxy-bypass-list='*' http://127.0.0.1
-      ```
-    
-    3. Install SSL certificates (only once needed) and run test application's webserver on `127.0.0.1:8080`:
-    
-      ```bash
-      symfony server:ca:install
-      APP_ENV=test symfony server:start --port=8080 --daemon
-      ```
-    
-    4. Run Behat:
-    
-      ```bash
-      vendor/bin/behat --strict --tags="@javascript,@mink:chromedriver"
-      ```
-    
-  - Static Analysis
-      
-    - PHPStan
-    
-      ```bash
-      vendor/bin/phpstan analyse -c phpstan.neon -l max src/  
-      ```
-
-  - Coding Standard
-  
-    ```bash
-    vendor/bin/ecs check
-    ```
-
-### Opening Sylius with your plugin
-
-- Using `test` environment:
-
-    ```bash
-    APP_ENV=test vendor/bin/console vendor/bin/console sylius:fixtures:load -n
-    APP_ENV=test symfony server:start -d
-    ```
-    
-- Using `dev` environment:
-
-    ```bash
-    vendor/bin/console vendor/bin/console sylius:fixtures:load -n
-    symfony server:start -d
-    ```
+Available keys:
+```yaml
+on_invoice:
+  fee_suffix: "(Note: +%fee%%)"                       # EN
+  fee_label: "Surcharge for payment on invoice"
+  fee_label_with_percent: "Surcharge for payment on invoice (%fee%%)"
+```

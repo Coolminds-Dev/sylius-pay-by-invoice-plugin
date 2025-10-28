@@ -7,12 +7,10 @@ use Sylius\Bundle\PaymentBundle\Form\Type\PaymentMethodChoiceType;
 use Sylius\Component\Core\Model\PaymentMethodInterface;
 use Sylius\Component\Locale\Context\LocaleContextInterface;
 use Symfony\Component\Form\AbstractTypeExtension;
-use Symfony\Component\Form\FormInterface;
-use Symfony\Component\Form\FormView;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class PaymentMethodChoiceTypeExtension extends AbstractTypeExtension {
@@ -104,9 +102,8 @@ final class PaymentMethodChoiceTypeExtension extends AbstractTypeExtension {
      */
     private function setLabel(OptionsResolver $resolver, bool $addToDescription): void
     {
-        \App\Helpers\Logger::write((string)$addToDescription);
         if ($addToDescription) {
-//            return;
+            return;
         }
 
         $resolver->setDefault('label_html', false);
