@@ -11,8 +11,8 @@
     %}
 
     {% if onInvoiceFeeTotal > 0 %}
-        <tr>
-            <td colspan="4"></td>
+        <tr style="border: none !important">
+            <td colspan="4" style="border: none !important"></td>
             <td class="text-right bg-gray">
                 {{ 'on_invoice.fee_label_with_percent'|trans({'%fee%': (fee_pct)}, 'messages', invoice.localeCode) }}:
             </td>
