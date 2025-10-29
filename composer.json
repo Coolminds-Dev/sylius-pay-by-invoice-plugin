@@ -17,6 +17,7 @@
     "require": {
         "php": "^8.2",
         "sylius/sylius": "^2.0",
+        "sylius/invoicing-plugin": "^0.20 || ^2.0",
         "symfony/framework-bundle": "^6.4"
     },
     "require-dev": {

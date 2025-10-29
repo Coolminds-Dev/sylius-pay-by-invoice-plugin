@@ -59,3 +59,12 @@ on_invoice:
   fee_label: "Surcharge for payment on invoice"
   fee_label_with_percent: "Surcharge for payment on invoice (%fee%%)"
 ```
+
+## invoice twig template
+Include below to your invoice twig templat. This way the fee will be visible on your invoice.
+
+```yaml
+{% include '@CoolmindsPayByInvoice/bundles/SyliusInvoicingPlugin/shared/download/_on_invoice_fee.html.twig' 
+  with { invoice: invoice } 
+%}
+```

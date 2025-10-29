@@ -8,6 +8,11 @@ services:
     resource: '../../*'
     exclude: '../../{Entity,Tests,Resources}'
 
+  Coolminds\PayByInvoice\EventSubscriber\SendOnInvoiceInvoiceEmailSubscriber:
+    arguments:
+      $onInvoicePaymentCode: '%coolminds_pay_by_invoice.payment_code%'
+      $preventDuplicateMail: true
+
   Coolminds\PayByInvoice\Processors\OnInvoiceFeeProcessor:
     arguments:
       $onInvoicePaymentCode: '%coolminds_pay_by_invoice.payment_code%'
