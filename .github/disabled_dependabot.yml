@@ -1,0 +1,24 @@
+version: 2
+updates:
+  # Composer dependencies (main & dev)
+  - package-ecosystem: "composer"
+    directory: "/"
+    schedule:
+      interval: "monthly"     # Controleer 1x per maand
+      time: "08:00"
+    open-pull-requests-limit: 5
+    # Alleen beveiligingsrelevante of stabiele updates
+    allow:
+      - dependency-type: "all"
+    ignore:
+      # Tools die vaak breaking changes pushen kun je hier opnemen
+      - dependency-name: "phpstan/phpstan"
+      - dependency-name: "rector/rector"
+      - dependency-name: "vimeo/psalm"
+
+  # Optioneel: GitHub Actions updates
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 3
