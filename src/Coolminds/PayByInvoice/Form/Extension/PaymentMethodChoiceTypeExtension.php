@@ -5,6 +5,7 @@ namespace Coolminds\PayByInvoice\Form\Extension;
 
 use Sylius\Bundle\PaymentBundle\Form\Type\PaymentMethodChoiceType;
 use Sylius\Component\Core\Model\PaymentMethodInterface;
+use Sylius\Component\Core\Model\ShopUserInterface;
 use Sylius\Component\Locale\Context\LocaleContextInterface;
 use Symfony\Component\Form\AbstractTypeExtension;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -42,16 +43,20 @@ final class PaymentMethodChoiceTypeExtension extends AbstractTypeExtension {
             // Is user in groep 'on_invoice'?
             $user = $this->security->getUser();
             $isOnInvoiceUser = false;
-            $userGroup = $user?->getCustomer()?->getGroup();
+            
+            // Check if user is a ShopUser (not AdminUser) before calling getCustomer()
+            if ($user instanceof ShopUserInterface) {
+                $userGroup = $user->getCustomer()?->getGroup();
 
-            $userGroupCode = null;
-            if ($userGroup) {
-                $userGroup->__load();
-                $userGroupCode = $userGroup->getCode();
-            }
+                $userGroupCode = null;
+                if ($userGroup) {
+                    $userGroup->__load();
+                    $userGroupCode = $userGroup->getCode();
+                }
 
-            if (null !== $userGroupCode && $userGroupCode === $this->onInvoiceGroupCode) {
-                $isOnInvoiceUser = true;
+                if (null !== $userGroupCode && $userGroupCode === $this->onInvoiceGroupCode) {
+                    $isOnInvoiceUser = true;
+                }
             }
 
             $callExistingFilter = static function ($filter, $choice): bool {
