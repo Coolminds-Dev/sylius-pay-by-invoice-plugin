@@ -18,7 +18,7 @@ final class Configuration implements ConfigurationInterface
             ->info('Code of the on-invoice payment method')
             ->defaultValue('on_invoice')
             ->end()
-            ->floatNode('fee_percentage')
+            ->scalarNode('fee_percentage')
             ->info('Percentage surcharge for on-invoice payments')
             ->defaultValue(5.0)
             ->end()
