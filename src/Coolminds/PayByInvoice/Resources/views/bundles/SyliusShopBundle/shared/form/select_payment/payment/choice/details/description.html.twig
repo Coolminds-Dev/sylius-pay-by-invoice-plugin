@@ -2,14 +2,24 @@
 
 {% if method.description is not null %}
     {% if method.code == on_invoice_payment_code %}
+        {% set customer = app.user is not null ? app.user.customer|default(null) : null %}
+        {% set groupCode = customer and customer.group is not null ? customer.group.code : null %}
+        {% set useFixedFee = groupCode is not null and groupCode == (on_invoice_fixed_fee_group_code ?? '') %}
         <div class="ps-4">
             <small class="text-black-50">
                 {{ method.description }}
                 {% if on_invoice_display_in_description == TRUE %}
-                    {{ 'on_invoice.fee_suffix'|trans({
-                        '%fee%': (on_invoice_fee_percentage ?? 0)
-                        |number_format(2, ',', '.')|trim(',0')
-                    })|raw }}
+                    {% if useFixedFee %}
+                        {{ 'on_invoice.fee_suffix_fixed'|trans({
+                            '%amount%': (on_invoice_fixed_fee_amount ?? 0)
+                            |number_format(2, ',', '.')|trim(',0')
+                        })|raw }}
+                    {% else %}
+                        {{ 'on_invoice.fee_suffix'|trans({
+                            '%fee%': (on_invoice_fee_percentage ?? 0)
+                            |number_format(2, ',', '.')|trim(',0')
+                        })|raw }}
+                    {% endif %}
                 {% endif %}
             </small>
         </div>

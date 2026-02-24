@@ -25,10 +25,12 @@ final class CoolmindsPayByInvoiceExtension extends Extension implements PrependE
         $processedConfig  = $this->processConfiguration($configuration, $configs);
 
         // Gebruik LITERAL waarden i.p.v. %parameters% (die bestaan hier nog niet)
-        $fee        = $processedConfig['fee_percentage'];
-        $code       = $processedConfig['payment_code'];
-        $group      = $processedConfig['group_code'];
-        $showInDesc = $processedConfig['display_in_description'];
+    $fee        = $processedConfig['fee_percentage'];
+    $code       = $processedConfig['payment_code'];
+    $group      = $processedConfig['group_code'];
+    $fixedGroup = $processedConfig['fixed_fee_group_code'];
+    $fixedFee   = $processedConfig['fixed_fee_amount'];
+    $showInDesc = $processedConfig['display_in_description'];
 
         // 2) Twig namespace registreren (belangrijk!)
         $ref       = new ReflectionClass(\Coolminds\PayByInvoice\CoolmindsPayByInvoicePlugin::class);
@@ -44,8 +46,10 @@ final class CoolmindsPayByInvoiceExtension extends Extension implements PrependE
             ],
             'globals' => [
                 'on_invoice_fee_percentage'         => $fee,
+                'on_invoice_fixed_fee_amount'        => $fixedFee,
                 'on_invoice_payment_code'           => $code,
                 'on_invoice_group_code'             => $group,
+                'on_invoice_fixed_fee_group_code'    => $fixedGroup,
                 'on_invoice_display_in_description' => $showInDesc,
             ],
         ]);
@@ -93,6 +97,8 @@ final class CoolmindsPayByInvoiceExtension extends Extension implements PrependE
         $container->setParameter('coolminds_pay_by_invoice.payment_code', $config['payment_code']);
         $container->setParameter('coolminds_pay_by_invoice.fee_percentage', $config['fee_percentage']);
         $container->setParameter('coolminds_pay_by_invoice.group_code', $config['group_code']);
+    $container->setParameter('coolminds_pay_by_invoice.fixed_fee_group_code', $config['fixed_fee_group_code']);
+    $container->setParameter('coolminds_pay_by_invoice.fixed_fee_amount', $config['fixed_fee_amount']);
         $container->setParameter('coolminds_pay_by_invoice.display_in_description', $config['display_in_description']);
 
         // Laad services.yaml uit Resources/config

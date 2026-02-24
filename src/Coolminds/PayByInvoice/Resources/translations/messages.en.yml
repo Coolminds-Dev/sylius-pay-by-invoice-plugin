@@ -1,4 +1,6 @@
 on_invoice:
   fee_suffix: "(Note: +%fee%%)"
+  fee_suffix_fixed: "(Note: +€%amount%)"
   fee_label: "Surcharge for payment on invoice"
   fee_label_with_percent: "Surcharge for payment on invoice (%fee%%)"
+  fee_label_with_amount: "Surcharge for payment on invoice (€%amount%)"
