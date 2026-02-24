@@ -17,6 +17,8 @@ services:
     arguments:
       $onInvoicePaymentCode: '%coolminds_pay_by_invoice.payment_code%'
       $feePercentage: '%coolminds_pay_by_invoice.fee_percentage%'
+      $fixedFeeGroupCode: '%coolminds_pay_by_invoice.fixed_fee_group_code%'
+      $fixedFeeAmount: '%coolminds_pay_by_invoice.fixed_fee_amount%'
       $adjustmentFactory: '@sylius.factory.adjustment'
       $translator: '@translator'
     tags:
@@ -25,8 +27,10 @@ services:
   Coolminds\PayByInvoice\Form\Extension\PaymentMethodChoiceTypeExtension:
     arguments:
       $onInvoiceFeePercentage: '%coolminds_pay_by_invoice.fee_percentage%'
+      $onInvoiceFixedFeeAmount: '%coolminds_pay_by_invoice.fixed_fee_amount%'
       $onInvoiceDisplayInDescription: '%coolminds_pay_by_invoice.display_in_description%'
       $onInvoiceGroupCode: '%coolminds_pay_by_invoice.group_code%'
+      $onInvoiceFixedFeeGroupCode: '%coolminds_pay_by_invoice.fixed_fee_group_code%'
       $onInvoicePaymentCode: '%coolminds_pay_by_invoice.payment_code%'
     tags:
       - { name: form.type_extension }

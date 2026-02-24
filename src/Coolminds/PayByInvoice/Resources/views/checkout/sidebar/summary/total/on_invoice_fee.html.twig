@@ -3,13 +3,12 @@
 
 {% if order %}
     {% set onInvoiceFeeTotal = order.getAdjustmentsTotal('on_invoice_fee') %}
+    {% set firstAdj = (order.getAdjustments('on_invoice_fee')|first) %}
+    {% set label = (firstAdj and firstAdj.label is not null and firstAdj.label is not same as(''))
+        ? firstAdj.label
+        : 'on_invoice.fee_label'|trans %}
 
     {% if onInvoiceFeeTotal > 0 %}
-        {% set firstAdj = (order.getAdjustments('on_invoice_fee')|first) %}
-        {% set label = (firstAdj and firstAdj.label is not null and firstAdj.label is not same as(''))
-            ? firstAdj.label
-            : 'on_invoice.fee_label'|trans %}
-
         <tr>
             <td>{{ label }}</td>
             <td class="text-end">

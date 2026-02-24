@@ -20,8 +20,10 @@ final class PaymentMethodChoiceTypeExtension extends AbstractTypeExtension {
         private readonly RequestStack $requestStack,
         private readonly LocaleContextInterface $localeContext,
         private readonly float $onInvoiceFeePercentage,
+        private readonly float $onInvoiceFixedFeeAmount,
         private readonly bool $onInvoiceDisplayInDescription,
         private readonly string $onInvoiceGroupCode,
+        private readonly string $onInvoiceFixedFeeGroupCode,
         private readonly string $onInvoicePaymentCode,
         private readonly TranslatorInterface $translator
     ) {
@@ -40,24 +42,11 @@ final class PaymentMethodChoiceTypeExtension extends AbstractTypeExtension {
             $route = $request?->attributes->get('_route', '');
             $isShop = \is_string($route) && str_starts_with($route, 'sylius_shop_');
 
-            // Is user in groep 'on_invoice'?
-            $user = $this->security->getUser();
-            $isOnInvoiceUser = false;
-            
-            // Check if user is a ShopUser (not AdminUser) before calling getCustomer()
-            if ($user instanceof ShopUserInterface) {
-                $userGroup = $user->getCustomer()?->getGroup();
-
-                $userGroupCode = null;
-                if ($userGroup) {
-                    $userGroup->__load();
-                    $userGroupCode = $userGroup->getCode();
-                }
-
-                if (null !== $userGroupCode && $userGroupCode === $this->onInvoiceGroupCode) {
-                    $isOnInvoiceUser = true;
-                }
-            }
+            $userGroupCode = $this->getUserGroupCode();
+            $isOnInvoiceUser = $userGroupCode !== null && \in_array($userGroupCode, [
+                $this->onInvoiceGroupCode,
+                $this->onInvoiceFixedFeeGroupCode,
+            ], true);
 
             $callExistingFilter = static function ($filter, $choice): bool {
                 if (!\is_callable($filter)) {
@@ -133,8 +122,15 @@ final class PaymentMethodChoiceTypeExtension extends AbstractTypeExtension {
                 }
 
                 /** 3) Add suffix for on_invoice **/
-                if ($choice instanceof PaymentMethodInterface && $choice->getCode() === 'on_invoice') {
-                    $suffix = ' ' . $this->translator->trans('on_invoice.fee_suffix', [
+                if ($choice instanceof PaymentMethodInterface && $choice->getCode() === $this->onInvoicePaymentCode) {
+                    $userGroupCode = $this->getUserGroupCode();
+                    $useFixedFee = $userGroupCode !== null && $userGroupCode === $this->onInvoiceFixedFeeGroupCode;
+
+                    $suffix = $useFixedFee
+                        ? ' ' . $this->translator->trans('on_invoice.fee_suffix_fixed', [
+                            '%amount%' => $this->formatAmount($this->onInvoiceFixedFeeAmount),
+                        ])
+                        : ' ' . $this->translator->trans('on_invoice.fee_suffix', [
                             '%fee%' => $this->formatPercent($this->onInvoiceFeePercentage),
                         ]);
                     return $base.$suffix;
@@ -173,5 +169,27 @@ final class PaymentMethodChoiceTypeExtension extends AbstractTypeExtension {
     {
         $formatted = number_format($value, 2, ',', '.');
         return rtrim(rtrim($formatted, '0'), ',');
+    }
+
+    private function formatAmount(float $value): string
+    {
+        $formatted = number_format($value, 2, ',', '.');
+        return rtrim(rtrim($formatted, '0'), ',');
+    }
+
+    private function getUserGroupCode(): ?string
+    {
+        $user = $this->security->getUser();
+        if (!$user instanceof ShopUserInterface) {
+            return null;
+        }
+
+        $userGroup = $user->getCustomer()?->getGroup();
+        if ($userGroup === null) {
+            return null;
+        }
+
+        $userGroup->__load();
+        return $userGroup->getCode();
     }
 }

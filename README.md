@@ -8,6 +8,8 @@ Adds a configurable “Pay by Invoice” flow to Sylius 2.0 (Symfony 6.4):
 A proccessor wil applie a configurable percentage surcharge when your specific payment method (e.g. on_invoice) is selected.
 The form type wil show/hide the payment method based on a your Customer Group during checkout.
 
+Optionally, you can configure a second customer group that uses a fixed surcharge amount (e.g. €5) instead of a percentage.
+
 Displays in scheckout summary. admin order, Twig hooks + one template override to display the surcharge in Checkout, Admin > Order, and Invoice PDF.
 
 ## Requirements
@@ -38,8 +40,10 @@ Create `config/packages/coolminds_pay_by_invoice.yaml`
 ``` yaml
 coolminds_pay_by_invoice:
   fee_percentage: 2.5              # float, e.g. 2.5 = 2.5%
+  fixed_fee_amount: 5.0            # float, fixed amount in major currency units (e.g. 5.0 = €5.00)
   payment_code: 'on_invoice'       # Sylius PaymentMethod code that triggers the fee
   group_code: 'betalen_op_factuur' # CustomerGroup code allowed to see/use this method
+  fixed_fee_group_code: 'betalen_op_factuur_vast' # CustomerGroup code that uses the fixed fee
   display_in_description: true     # append "(+X%)" to the payment label in the shop
 ```
 
@@ -56,8 +60,10 @@ Available keys:
 ```yaml
 on_invoice:
   fee_suffix: "(Note: +%fee%%)"                       # EN
+  fee_suffix_fixed: "(Note: +€%amount%)"             # EN
   fee_label: "Surcharge for payment on invoice"
   fee_label_with_percent: "Surcharge for payment on invoice (%fee%%)"
+  fee_label_with_amount: "Surcharge for payment on invoice (€%amount%)"
 ```
 
 ## invoice twig template

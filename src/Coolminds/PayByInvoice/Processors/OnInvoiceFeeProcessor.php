@@ -4,6 +4,7 @@ namespace Coolminds\PayByInvoice\Processors;
 
 use Sylius\Component\Core\Model\OrderInterface as CoreOrderInterface;
 use Sylius\Component\Core\Model\PaymentMethodInterface as CorePaymentMethodInterface;
+use Sylius\Component\Core\Model\ShopUserInterface;
 use Sylius\Component\Order\Factory\AdjustmentFactoryInterface;
 use Sylius\Component\Order\Model\AdjustmentInterface;
 use Sylius\Component\Order\Model\OrderInterface;
@@ -14,6 +15,8 @@ final class OnInvoiceFeeProcessor implements OrderProcessorInterface {
     public function __construct(
         private readonly string $onInvoicePaymentCode,
         private readonly float $feePercentage,
+        private readonly string $fixedFeeGroupCode,
+        private readonly float $fixedFeeAmount,
         private readonly AdjustmentFactoryInterface $adjustmentFactory,
         private readonly TranslatorInterface $translator,
     ) {
@@ -28,7 +31,7 @@ final class OnInvoiceFeeProcessor implements OrderProcessorInterface {
     private function isAfterPaymentSelection(CoreOrderInterface $order): bool
     {
         $state = method_exists($order, 'getCheckoutState') ? (string)$order->getCheckoutState() : '';
-        return in_array($state, ['payment_selected', 'completed'], true);
+        return in_array($state, ['payment', 'payment_selected', 'completed'], true);
     }
 
     private function removeOwnFees(CoreOrderInterface $order): void
@@ -54,6 +57,42 @@ final class OnInvoiceFeeProcessor implements OrderProcessorInterface {
         return rtrim(rtrim($f, '0'), ',');
     }
 
+    private function formatAmount(float $value): string
+    {
+        $f = number_format($value, 2, ',', '.');
+        return rtrim(rtrim($f, '0'), ',');
+    }
+
+    private function isFixedFeeCustomer(CoreOrderInterface $order): bool
+    {
+        $groupCode = $this->resolveGroupCode($order);
+
+        return $groupCode !== null && $groupCode === $this->fixedFeeGroupCode;
+    }
+
+    private function resolveGroupCode(CoreOrderInterface $order): ?string
+    {
+        $customer = method_exists($order, 'getCustomer') ? $order->getCustomer() : null;
+        $group = $customer?->getGroup();
+
+        if ($group === null && method_exists($order, 'getUser')) {
+            $user = $order->getUser();
+            if ($user instanceof ShopUserInterface) {
+                $group = $user->getCustomer()?->getGroup();
+            }
+        }
+
+        if ($group === null) {
+            return null;
+        }
+
+        if (method_exists($group, '__load')) {
+            $group->__load();
+        }
+
+        return $group->getCode();
+    }
+
     public function processWithOverride(OrderInterface $order, ?CorePaymentMethodInterface $override = null): void
     {
         if (!$order instanceof CoreOrderInterface) {
@@ -76,7 +115,11 @@ final class OnInvoiceFeeProcessor implements OrderProcessorInterface {
         $this->removeOwnFees($order);
 
         $itemsTotal = $order->getItemsTotal();
-        $feeAmount = (int)\round($itemsTotal * ($this->feePercentage / 100));
+
+        $useFixedFee = $this->isFixedFeeCustomer($order);
+        $feeAmount = $useFixedFee
+            ? (int) \round($this->fixedFeeAmount * 100)
+            : (int) \round($itemsTotal * ($this->feePercentage / 100));
 
         if ($feeAmount <= 0) {
             return;
@@ -90,9 +133,13 @@ final class OnInvoiceFeeProcessor implements OrderProcessorInterface {
             $this->translator->setLocale($locale);
         }
 
-        $label = $this->translator->trans('on_invoice.fee_label_with_percent', [
-            '%fee%' => $this->formatPercent($this->feePercentage),
-        ]);
+        $label = $useFixedFee
+            ? $this->translator->trans('on_invoice.fee_label_with_amount', [
+                '%amount%' => $this->formatAmount($this->fixedFeeAmount),
+            ])
+            : $this->translator->trans('on_invoice.fee_label_with_percent', [
+                '%fee%' => $this->formatPercent($this->feePercentage),
+            ]);
 
         if ($previousLocale !== null) {
             $this->translator->setLocale($previousLocale);
